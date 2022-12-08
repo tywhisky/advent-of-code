@@ -26,7 +26,7 @@ defmodule Day07.PartTwo do
   def in2out(tree, path, num) do
     parent_path = path |> Enum.reverse() |> tl() |> Enum.reverse()
     origin_size = get_in(tree, parent_path ++ [:size])
-    origin_size = origin_size && origin_size || 0
+    origin_size = (origin_size && origin_size) || 0
     new_tree = put_in(tree, parent_path ++ [:size], origin_size + num)
 
     in2out(new_tree, parent_path, num)
@@ -67,16 +67,15 @@ defmodule Day07.PartTwo do
 end
 
 sizes =
-File.read!("./day_07/input.txt")
-|> String.split("\n")
-|> Enum.map(&String.split(&1, " "))
-|> Day07.PartTwo.run(%{root: %{size: 0}}, [:root])
-|> Day07.PartTwo.dfs()
-
+  File.read!("./day_07/input.txt")
+  |> String.split("\n")
+  |> Enum.map(&String.split(&1, " "))
+  |> Day07.PartTwo.run(%{root: %{size: 0}}, [:root])
+  |> Day07.PartTwo.dfs()
 
 max = Enum.max(sizes)
 
 sizes
-|> Enum.filter(& max - &1 < 40000000)
+|> Enum.filter(&(max - &1 < 40_000_000))
 |> Enum.min()
 |> IO.inspect()

@@ -1,4 +1,4 @@
-defmodule Day07.PartOne do
+defmodule Day07.PartTwo do
   def run([["$", "cd", "/"] | tail], dir_tree, _curr_path) do
     run(tail, dir_tree, [:root])
   end
@@ -66,11 +66,17 @@ defmodule Day07.PartOne do
   end
 end
 
+sizes =
 File.read!("./day_07/input.txt")
 |> String.split("\n")
 |> Enum.map(&String.split(&1, " "))
-|> Day07.PartOne.run(%{root: %{size: 0}}, [:root])
-|> Day07.PartOne.dfs()
-|> Enum.filter(&(&1 <= 10_0000))
-|> Enum.sum()
+|> Day07.PartTwo.run(%{root: %{size: 0}}, [:root])
+|> Day07.PartTwo.dfs()
+
+
+max = Enum.max(sizes)
+
+sizes
+|> Enum.filter(& max - &1 < 40000000)
+|> Enum.min()
 |> IO.inspect()

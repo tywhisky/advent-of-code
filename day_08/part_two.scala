@@ -14,10 +14,13 @@ import scala.io.Source
         var top_max = -1
         while(top >= 0) {
             var iter = input(top)(j).toInt
-            if(iter >= curr && iter > top_max) {
+            if(iter > curr && curr > top_max) {
                top_count += 1 
             }
-            if(iter < curr && iter >= top_max) {
+            if(iter == curr && iter > top_max) {
+                top_count +=1
+            }
+            if(iter < curr && curr > top_max) {
                 top_count += 1
             }
             top_max = iter.max(top_max)
@@ -29,10 +32,13 @@ import scala.io.Source
         var right_max = -1
         while(right < input(0).length) {
             var iter = input(i)(right).toInt
-            if(iter >= curr && iter > right_max) {
+            if(iter > curr && curr > right_max) {
                right_count += 1 
             }
-            if(iter < curr && iter >= right_max) {
+            if(iter == curr && iter > right_max) {
+                right_count +=1
+            }
+            if(iter < curr && curr > right_max) {
                 right_count += 1
             }
             right_max = iter.max(right_max)
@@ -44,10 +50,13 @@ import scala.io.Source
         var bottom_max = -1
         while(bottom < input.length) {
             var iter = input(bottom)(j).toInt
-            if(iter >= curr && iter > bottom_max) {
+            if(iter > curr && curr > bottom_max) {
                bottom_count += 1 
             }
-            if(iter < curr && iter >= bottom_max) {
+            if(iter == curr && iter > bottom_max) {
+                bottom_count +=1
+            }
+            if(iter < curr && curr > bottom_max) {
                 bottom_count += 1
             }
             bottom_max = iter.max(bottom_max)
@@ -59,19 +68,20 @@ import scala.io.Source
         var left_max = -1
         while(left >= 0) {
             var iter = input(i)(left).toInt
-            if(iter >= curr && iter > left_max) {
+            if(iter > curr && curr > left_max) {
                left_count += 1 
             }
-            if(iter < curr && iter >= left_max) {
+            if(iter == curr && iter > left_max) {
+                left_count +=1
+            }
+            if(iter < curr && curr > left_max) {
                 left_count += 1
             }
             left_max = iter.max(left_max)
             left -= 1
         }
 
-        println((top_count, right_count, bottom_count, left_count))
         result = (top_count * right_count * bottom_count * left_count).max(result)
     }
 
-
-    println(result)
+    print(result)

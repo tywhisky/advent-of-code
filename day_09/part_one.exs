@@ -1,16 +1,22 @@
 defmodule Day09.PartOne do
   def run([], _, record), do: record
+
   def run([direction | tail], {0, 0, 0, 0}, record) do
     case direction do
-        "R" -> run(tail, {0, 0, 1, 0}, record)
-        "L" -> run(tail, {0, 0, -1, 0}, record)
-        "U" -> run(tail, {0, 0, 0, 1}, record)
-        "D" -> run(tail, {0, 0, 0, -1}, record)
+      "R" -> run(tail, {0, 0, 1, 0}, record)
+      "L" -> run(tail, {0, 0, -1, 0}, record)
+      "U" -> run(tail, {0, 0, 0, 1}, record)
+      "D" -> run(tail, {0, 0, 0, -1}, record)
     end
   end
+
   # 在同一行，y 轴相同
   def run(["R" | tail], {t_x, y, h_x, y}, record) do
-    run(tail, {t_x + 1, y, h_x + 1, y}, MapSet.put(record, {t_x + 1, y}))
+    if h_x + 1 == t_x do
+      run(tail, {t_x, y, t_x, y}, record)
+    else
+      run(tail, {t_x + 1, y, h_x + 1, y}, MapSet.put(record, {t_x + 1, y}))
+    end
   end
 
   # H 在右上角
@@ -31,7 +37,11 @@ defmodule Day09.PartOne do
 
   # 在同一列, x 轴相同
   def run(["D" | tail], {x, t_y, x, h_y}, record) do
-    run(tail, {x, t_y + 1, x, h_y + 1}, MapSet.put(record, {x, t_y + 1}))
+    if h_y - 1 == t_y do
+      run(tail, {x, t_y, x, t_y}, record)
+    else
+      run(tail, {x, t_y + 1, x, h_y + 1}, MapSet.put(record, {x, t_y + 1}))
+    end
   end
 
   # H 在左下角
@@ -52,7 +62,11 @@ defmodule Day09.PartOne do
 
   # 在同一行， y轴相同
   def run(["L" | tail], {t_x, y, h_x, y}, record) do
-    run(tail, {t_x - 1, y, h_x - 1, y}, MapSet.put(record, {t_x - 1, y}))
+    if h_x - 1 == t_x do
+      run(tail, {t_x, y, t_x, y}, record)
+    else
+      run(tail, {h_x, y, h_x - 1, y}, MapSet.put(record, {h_x, y}))
+    end
   end
 
   # H 在左上角
@@ -73,7 +87,11 @@ defmodule Day09.PartOne do
 
   # 在同一列，x 轴相同
   def run(["U" | tail], {x, t_y, x, h_y}, record) do
-    run(tail, {x, t_y + 1, x, h_y + 1}, MapSet.put(record, {x, t_y + 1}))
+    if h_y + 1 == t_y do
+      run(tail, {x, t_y, x, t_y}, record)
+    else
+      run(tail, {x, t_y + 1, x, h_y + 1}, MapSet.put(record, {x, t_y + 1}))
+    end
   end
 
   # H 在左上角
@@ -99,7 +117,7 @@ File.read!("./day_09/input.txt")
 |> Enum.flat_map(fn [action, step] ->
   List.duplicate(action, String.to_integer(step))
 end)
-|> IO.inspect
+|> IO.inspect()
 |> Day09.PartOne.run({0, 0, 0, 0}, MapSet.new([{0, 0}]))
 |> IO.inspect()
 |> MapSet.to_list()

@@ -1,23 +1,16 @@
 defmodule Day09.PartTwo do
   def run([], _, record), do: record
 
-  def run(["R" | tail], [{h_x, h_y} | c_tail], record) do
-    chain = iter_follow([{h_x + 1, h_y} | c_tail], [])
-    run(tail, chain, MapSet.put(record, List.last(chain)))
-  end
+  def run([direction | tail], [{h_x, h_y} | c_tail], record) do
+    head =
+      case direction do
+        "R" -> {h_x + 1, h_y}
+        "D" -> {h_x, h_y - 1}
+        "L" -> {h_x - 1, h_y}
+        "U" -> {h_x, h_y + 1}
+      end
 
-  def run(["D" | tail], [{h_x, h_y} | c_tail], record) do
-    chain = iter_follow([{h_x, h_y - 1} | c_tail], [])
-    run(tail, chain, MapSet.put(record, List.last(chain)))
-  end
-
-  def run(["L" | tail], [{h_x, h_y} | c_tail], record) do
-    chain = iter_follow([{h_x - 1, h_y} | c_tail], [])
-    run(tail, chain, MapSet.put(record, List.last(chain)))
-  end
-
-  def run(["U" | tail], [{h_x, h_y} | c_tail], record) do
-    chain = iter_follow([{h_x, h_y + 1} | c_tail], [])
+    chain = iter_follow([head | c_tail], [])
     run(tail, chain, MapSet.put(record, List.last(chain)))
   end
 
@@ -49,7 +42,7 @@ File.read!("./day_09/input.txt")
 |> String.split("\n")
 |> Enum.map(&String.split(&1, " "))
 |> Enum.flat_map(fn [action, step] ->
-    List.duplicate(action, String.to_integer(step))
+  List.duplicate(action, String.to_integer(step))
 end)
 |> Day09.PartTwo.run(List.duplicate({0, 0}, 10), MapSet.new([{0, 0}]))
 |> MapSet.to_list()

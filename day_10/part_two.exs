@@ -29,7 +29,6 @@ input =
 Day10.PartTwo.run(input, 1, 1, %{})
 |> Map.to_list()
 |> Enum.sort_by(&elem(&1, 0))
-|> IO.inspect(limit: :infinity)
 |> Enum.map(fn {cycle, value} ->
   if rem(cycle, 40) in (value - 1)..(value + 1), do: "#", else: "."
 end)

@@ -54,8 +54,8 @@ end
 regex = ~r/[A-Za-z_: \n]/
 
 File.read!("#{__DIR__}/input.txt")
-|> String.split("\r\n\r")
-|> Enum.map(&String.split(&1, "\r\n "))
+|> String.split("\n\n")
+|> Enum.map(&String.split(&1, "\n "))
 |> Enum.map(fn [
                  idx_str,
                  start_str,

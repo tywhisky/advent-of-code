@@ -1,51 +1,63 @@
 defmodule Day12.PartOne do
-  def find_start(height_map, x, y) when y >= height_map_size(elem(height_map, 0)) do
-    find_start(height_map, x + 1, 0)
+  def run([], _count, _origin, dp, [], _pass) do
+    dp
   end
 
-  def find_start(height_map, x, y) do
-    case elem(height_map, x) |> elem(y) do
-      "S" -> {x, y}
-      _ -> find_start(height_map, x, y + 1)
-    end
+  def run([], count, origin, dp, rest, pass) do
+    run(rest, count + 1, origin, dp, [], pass)
   end
 
-  def run(height_map, {x, y}, count) do
-    [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}] 
-    |> Enum.map(fn 
-        {nx, ny} when nx < 0 or ny < 0 -> count
-        {nx, ny} when nx >= tuple_size(height_map) or ny >= tuple_size(elem(height_map, 0)) ->
-            count
-        {nx, ny} when elem(elem(height_map, nx), ny) == "." ->
-            count
-        {nx, ny} when elem(elem(height_map, nx), ny) == "E" -> 
-            count + 1
-        {nx, ny} ->
-                new_row = 
-                height_map
-                |> elem(x)
-                |> Tuple.delete_at(y)
-                |> Tuple.insert_at(y, ".")
-            
-                new_height_map = 
-                    height_map
-                    |> Tuple.delete_at(x)
-                    |> Tuple.insert_at(x, new_row)
+  def run([{{x, y}, char} | tail], count, origin, dp, rest, pass) do
+    new_pass = Map.put(pass, {x, y}, true)
 
-            
-        
-    end)
+    nexts =
+      [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+      |> Enum.reject(&(!origin[&1]))
+      |> Enum.reject(&(not is_nil(new_pass[&1])))
+      |> Enum.reject(&(origin[&1] - char > 1))
+      |> Enum.map(&{&1, origin[&1]})
+
+    new_dp = maintain(nexts, count + 1, dp)
+
+    new_pass =
+      Enum.reduce(nexts, new_pass, fn {p, _char}, acc ->
+        Map.put(acc, p, true)
+      end)
+
+    run(tail, count, origin, new_dp, rest ++ nexts, new_pass)
+  end
+
+  def maintain([], _count, dp), do: dp
+
+  def maintain([{p, _char} | tail], count, dp) do
+    new_dp = Map.put(dp, p, min(count, dp[p]))
+    maintain(tail, count, new_dp)
   end
 end
 
 input =
   File.read!("./day_12/input.txt")
   |> String.split("\n")
-  |> Enum.map(&String.graphemes(&1))
-  |> Enum.map(&List.to_tuple(&1))
-  |> List.to_tuple()
+  |> Enum.map(&String.to_charlist(&1))
+  |> Enum.with_index()
+  |> Enum.flat_map(fn {list, i} ->
+    list
+    |> Enum.with_index()
+    |> Enum.map(fn {v, j} ->
+      {{i, j}, v}
+    end)
+  end)
+  |> Map.new()
 
-start_point = Day12.PartOne.find_start(input, 0, 0)
+{start_point, _} = Enum.find(input, &(elem(&1, 1) == ?S))
+{{e_x, e_y}, _} = Enum.find(input, &(elem(&1, 1) == ?E))
 
-Day12.PartOne.run(input, start_point, 0)
+Day12.PartOne.run([{start_point, ?a}], 0, input, %{}, [], %{start_point => true})
+|> Map.take([{e_x + 1, e_y}, {e_x - 1, e_y}, {e_x, e_y + 1}, {e_x, e_y - 1}])
+|> Enum.map(fn {p, path} ->
+  {p, input[p], path}
+end)
+|> Enum.filter(&(elem(&1, 1) in 'yz'))
+|> Enum.map(&(elem(&1, 2) + 1))
+|> Enum.min()
 |> IO.inspect()

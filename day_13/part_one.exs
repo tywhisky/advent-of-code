@@ -1,14 +1,17 @@
 defmodule Day13.PartOne do
-  def run([], sum), do: sum
+  def run([_], sum), do: sum
 
   def run([{[left, right], index} | tail], sum) do
     case do_compare(left, right) do
-      true -> run(tail, sum + index)
-      _ -> run(tail, sum)
+      true ->
+        run(tail, sum + index)
+
+      _ ->
+        run(tail, sum)
     end
   end
 
-  def do_compare([], []), do: :equl
+  def do_compare(left, right) when left == right, do: :equal
 
   def do_compare([], _right), do: true
 
@@ -31,7 +34,11 @@ defmodule Day13.PartOne do
 
   def do_compare([l_h | l_tail], [r_h | r_tail])
       when is_list(l_h) and is_list(r_h) do
-    do_compare(l_h, r_h)
+    case do_compare(l_h, r_h) do
+      :equal -> do_compare(l_tail, r_tail)
+      true -> true
+      _ -> false
+    end
   end
 
   def do_compare([l_h | _] = left, [r_h | r_tail]) when is_list(l_h) do
@@ -53,6 +60,6 @@ File.read!("./day_13/input.txt")
     result
   end)
 end)
-|> Enum.with_index()
+|> Enum.with_index(1)
 |> Day13.PartOne.run(0)
 |> IO.inspect()

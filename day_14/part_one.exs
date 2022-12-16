@@ -35,8 +35,13 @@ defmodule Day14.PartOne do
     case {walls[{x, y + 1}], walls[{x - 1, y + 1}], walls[{x + 1, y + 1}]} do
       {nil, _, _} ->
         run({x, y + 1}, lowest, walls)
-      {_, nil, _} -> run({x - 1, y + 1}, lowest, walls)
-      {_, _, nil} -> run({x + 1, y + 1}, lowest, walls)
+
+      {_, nil, _} ->
+        run({x - 1, y + 1}, lowest, walls)
+
+      {_, _, nil} ->
+        run({x + 1, y + 1}, lowest, walls)
+
       _ ->
         new_walls = Map.put(walls, {x, y}, :sand)
         run({500, 0}, lowest, new_walls)
@@ -66,6 +71,6 @@ walls =
 {{_, lowest}, _} = Enum.max_by(walls, &elem(elem(&1, 0), 1))
 
 Day14.PartOne.run({500, 0}, lowest, walls)
-|> Enum.filter(&elem(&1, 1) == :sand)
+|> Enum.filter(&(elem(&1, 1) == :sand))
 |> length()
 |> IO.inspect()

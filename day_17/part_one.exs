@@ -4,26 +4,25 @@ defmodule Day17.PartOne do
   end
 
   def second_rock(height) do
-    [{height, 3}, {height - 1, 2}, {height - 1, 3}, {height - 1, 4}, {height - 2, 3}]
+    [{height, 3}, {height + 1, 2}, {height + 1, 3}, {height + 1, 4}, {height + 2, 3}]
   end
 
   def third_rock(height) do
     [
+      {height + 2, 4},
+      {height + 1, 4},
       {height, 4},
-      {height - 1, 4},
-      {height - 2, 4},
-      {height - 3, 4},
-      {height - 3, 3},
-      {height - 3, 2}
+      {height, 3},
+      {height, 2}
     ]
   end
 
   def forth_rock(height) do
-    [{height, 2}, {height - 1, 2}, {height - 2, 2}, {height - 3, 2}]
+    [{height, 2}, {height + 1, 2}, {height + 2, 2}, {height + 3, 2}]
   end
 
   def fifth_rock(height) do
-    [{height, 2}, {height, 3}, {height - 1, 2}, {height - 1, 3}]
+    [{height, 2}, {height, 3}, {height + 1, 2}, {height + 1, 3}]
   end
 
   def build_rock(1, height), do: first_rock(height)
@@ -32,7 +31,7 @@ defmodule Day17.PartOne do
   def build_rock(4, height), do: forth_rock(height)
   def build_rock(0, height), do: fifth_rock(height)
 
-  def run(gas, 2023, record), do: record
+  def run(_gas, 2023, record), do: record
 
   def run(gas, count, record) do
     {highest, _} = Enum.max_by(record, &elem(&1, 0))
@@ -60,9 +59,7 @@ defmodule Day17.PartOne do
     down_rock = Enum.map(rock, fn {h, x} -> {h - 1, x} end)
 
     if MapSet.disjoint?(MapSet.new(down_rock), record) do
-      new_record = (down_rock ++ MapSet.to_list(record)) |> MapSet.new()
-
-      fall(tail, down_rock, new_record)
+      fall(tail, down_rock, record)
     else
       {(rock ++ MapSet.to_list(record)) |> MapSet.new(), tail}
     end
@@ -71,11 +68,10 @@ end
 
 init = MapSet.new([{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}])
 
-input =
-  File.read!("#{__DIR__}/input.txt")
-  |> String.graphemes()
-  |> List.duplicate(999)
-  |> List.flatten()
-  |> Day17.PartOne.run(1, init)
-  |> Enum.max_by(&elem(&1, 0))
-  |> IO.inspect()
+File.read!("#{__DIR__}/input.txt")
+|> String.graphemes()
+|> List.duplicate(999)
+|> List.flatten()
+|> Day17.PartOne.run(1, init)
+|> Enum.max_by(&elem(&1, 0))
+|> IO.inspect()

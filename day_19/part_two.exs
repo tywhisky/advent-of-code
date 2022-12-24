@@ -1,10 +1,9 @@
-defmodule Day19.PartOne do
-  @max_time 25
+defmodule Day19.PartTwo do
+  @max_time 33
 
   def run([index | costs]) do
     simulate(1, costs, [1, 0, 0, 0], [0, 0, 0, 0])
     IO.inspect(Process.get(:max_geodes, 0), label: "index: #{index}")
-    index * Process.get(:max_geodes, 0)
   end
 
   def simulate(@max_time, _, _, [_, _, _, gev]) do
@@ -27,9 +26,8 @@ defmodule Day19.PartOne do
     remaining = @max_time - minutes
     triangular = div(remaining * (remaining + 1), 2)
     max_score = gev + geode * remaining + triangular
-    Process.put(:max_geodes, max(Process.get(:max_geodes, 0), gev))
 
-    if max_score < Process.get(:max_geodes, 0) do
+    if max_score <= Process.get(:max_geodes, 0) do
       gev
     else
       list = [
@@ -94,6 +92,7 @@ defmodule Day19.PartOne do
 
       list
       |> Enum.reduce(gev, fn {qty, values}, acc ->
+        Process.put(:max_geodes, max(Process.get(:max_geodes, 0), acc))
 
         max(acc, simulate(minutes + 1, cost, qty, values))
       end)
@@ -106,7 +105,8 @@ input = File.read!("#{__DIR__}/input.txt")
 Regex.scan(~r/[0-9]+/, input)
 |> Enum.map(fn [num] -> String.to_integer(num) end)
 |> Enum.chunk_every(7)
-|> Task.async_stream(&Day19.PartOne.run(&1), timeout: :infinity)
+|> Enum.take(3)
+|> Task.async_stream(&Day19.PartTwo.run(&1), timeout: :infinity)
 |> Enum.map(&elem(&1, 1))
-|> Enum.sum()
+|> Enum.product()
 |> IO.inspect()

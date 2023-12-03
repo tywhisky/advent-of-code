@@ -56,9 +56,19 @@ defmodule Day03 do
         {x - 1, y + 1},
         {x - 1, y - 1}
       ]
-      |> Enum.map(&Map.get(nums_map, &1))
-      |> Enum.reject(&is_nil/1)
-      |> Enum.uniq()
+      |> Enum.map(&{&1, Map.get(nums_map, &1)})
+      |> Enum.reject(&(elem(&1, 1) == nil))
+      |> Enum.reduce([], fn {{a, b}, c}, acc ->
+        case Enum.find(acc, fn
+               {{x, y}, _} when x == a and y in (b - 1)..(b + 1) -> true
+               _ -> false
+             end) do
+          nil -> [{{a, b}, c} | acc]
+          _ -> acc
+        end
+      end)
+      |> Enum.reverse()
+      |> Enum.map(&elem(&1, 1))
       |> then(fn list ->
         if length(list) == 2, do: Enum.product(list), else: 0
       end)
@@ -89,7 +99,7 @@ defmodule Day03 do
     |> Enum.with_index()
   end
 
-  defp search_nums([], prev, result), do: [prev | result] |> Enum.reject(& elem(&1, 0) == nil)
+  defp search_nums([], prev, result), do: [prev | result] |> Enum.reject(&(elem(&1, 0) == nil))
 
   defp search_nums([{char, idx} | tail], {prev_str, prev_idxs}, result) do
     if String.match?(char, ~r/[0-9]/) do

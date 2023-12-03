@@ -26,7 +26,7 @@ defmodule Day03 do
       |> Enum.flat_map(fn {row, col_idx} ->
         Enum.map(row, fn {str, row_idx} -> {{row_idx, col_idx}, str} end)
       end)
-      |> Enum.filter(&String.match?(elem(&1, 1), ~r/[^1-9]/))
+      |> Enum.filter(&String.match?(elem(&1, 1), ~r/[^0-9]/))
       |> Enum.filter(&String.match?(elem(&1, 1), ~r/[^.]/))
       |> Map.new()
 
@@ -51,7 +51,7 @@ defmodule Day03 do
   defp search_nums([], prev, result), do: [prev | result] |> tl()
 
   defp search_nums([{char, idx} | tail], {prev_str, prev_idxs}, result) do
-    if String.match?(char, ~r/[1-9]/) do
+    if String.match?(char, ~r/[0-9]/) do
       search_nums(tail, {"#{prev_str}#{char}", [idx | prev_idxs]}, result)
     else
       if not is_nil(prev_str) do

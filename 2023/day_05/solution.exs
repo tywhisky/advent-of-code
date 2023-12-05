@@ -28,7 +28,7 @@ defmodule Day05 do
       range
       |> Enum.reduce([], fn {seed_start, seed_end}, acc ->
         acc1 =
-          case Enum.find(section, fn {{s, e}, ds} ->
+          case Enum.find(section, fn {{s, e}, _ds} ->
                  seed_start >= s and seed_start <= e
                end) do
             nil ->
@@ -42,19 +42,19 @@ defmodule Day05 do
           end
 
         acc2 =
-          case Enum.find(section, fn {{s, e}, ds} -> seed_end >= s and seed_end <= e end) do
+          case Enum.find(section, fn {{s, e}, _ds} -> seed_end >= s and seed_end <= e end) do
             nil ->
               [{seed_start, seed_end} | acc1]
 
-            {{ss, ee}, ds} when ss <= seed_start ->
+            {{ss, _ee}, ds} when ss <= seed_start ->
               [{ds - ss + seed_start, ds - ss + seed_end} | acc1]
 
-            {{ss, ee}, ds} ->
+            {{ss, _ee}, ds} ->
               [{seed_start, ss - 1}, {ds - ss + ss, ds - ss + seed_end} | acc1]
           end
 
         acc3 =
-          case Enum.find(section, fn {{s, e}, ds} -> seed_start < s and seed_end > e end) do
+          case Enum.find(section, fn {{s, e}, _ds} -> seed_start < s and seed_end > e end) do
             nil ->
               acc2
 

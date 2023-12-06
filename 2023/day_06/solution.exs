@@ -8,9 +8,24 @@ defmodule Day06 do
       end)
       |> Enum.reject(&(&1 <= distance))
       |> Enum.count()
-    |> dbg()
     end)
     |> Enum.product()
+  end
+
+  def part_two() do
+    {time, distance} =
+      parse()
+      |> Enum.reduce({"", ""}, fn [t, d], {time, distance} ->
+        {"#{time}#{t}", "#{distance}#{d}"}
+      end)
+      |> then(fn {t, d} -> {String.to_integer(t), String.to_integer(d)} end)
+
+     0..time
+      |> Enum.map(fn hold_speed ->
+        (time - hold_speed) * hold_speed
+      end)
+      |> Enum.reject(&(&1 <= distance))
+      |> Enum.count()
   end
 
   def parse() do
@@ -24,3 +39,4 @@ defmodule Day06 do
 end
 
 IO.inspect("The Result of Day06 Part One is: #{Day06.part_one()}")
+IO.inspect("The Result of Day06 Part Two is: #{Day06.part_two()}")

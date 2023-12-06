@@ -20,12 +20,18 @@ defmodule Day06 do
       end)
       |> then(fn {t, d} -> {String.to_integer(t), String.to_integer(d)} end)
 
-     0..time
-      |> Enum.map(fn hold_speed ->
-        (time - hold_speed) * hold_speed
-      end)
-      |> Enum.reject(&(&1 <= distance))
-      |> Enum.count()
+    head = find_edge(Enum.to_list(0..time), time, distance)
+    last = find_edge(Enum.to_list(time..0), time, distance)
+
+    last - head + 1
+  end
+
+  def find_edge([h | _tail], time, distance) when (time - h) * h > distance do
+    h
+  end
+
+  def find_edge([_h | tail], time, distance) do
+    find_edge(tail, time, distance)
   end
 
   def parse() do

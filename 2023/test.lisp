@@ -3,8 +3,8 @@
   "Calculate the nth Fibonacci number."
   (if (< n 2)
       n
-    (+ (fibonacci (- n 1))
-       (fibonacci (- n 2)))))
+      (+ (fibonacci (- n 1))
+         (fibonacci (- n 2)))))
 
 ;; 测试斐波那契函数
 (message "Fibonacci of 0: %d" (fibonacci 0))

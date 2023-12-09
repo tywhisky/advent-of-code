@@ -1,27 +1,29 @@
 defmodule Day09 do
   def part_one() do
     parse()
-    |> Enum.map(&build_steps(&1, [Enum.reverse(&1)]))
-    |> Enum.map(fn list ->
-      Enum.reduce(list, 0, fn [h | _], acc ->
+    |> Enum.map(&build_steps/1)
+    |> Enum.map(
+      &Enum.reduce(&1, 0, fn [h | _], acc ->
         h + acc
       end)
-    end)
+    )
     |> Enum.sum()
   end
 
   def part_two() do
     parse()
-    |> Enum.map(&build_steps(&1, [Enum.reverse(&1)]))
+    |> Enum.map(&build_steps/1)
     |> Enum.map(&Enum.map(&1, fn x -> Enum.reverse(x) end))
-    |> Enum.map(fn list ->
-      Enum.reduce(list, {0, 0}, fn [h | _], {curr, acc} ->
+    |> Enum.map(
+      &Enum.reduce(&1, {0, 0}, fn [h | _], {curr, acc} ->
         {h - curr, h - curr + acc}
       end)
-    end)
+    )
     |> Enum.map(&elem(&1, 0))
     |> Enum.sum()
   end
+
+  def build_steps(list), do: build_steps(list, [Enum.reverse(list)])
 
   def build_steps(list, result) do
     next =
@@ -44,5 +46,5 @@ defmodule Day09 do
   end
 end
 
-IO.puts("The part one's solution: #{Day09.part_one()}")
-IO.puts("The part two's solution: #{Day09.part_two()}")
+IO.puts("The Result of Day09 Part One is: #{Day09.part_one()}")
+IO.puts("The Result of Day09 Part Two is: #{Day09.part_two()}")

@@ -46,7 +46,7 @@ defmodule Day10 do
   def find_next("S", {_col, _row}), do: []
 
   def parse() do
-    "input.txt"
+    "test.txt"
     |> File.read!()
     |> String.split("\n", trim: true)
     |> Enum.with_index()

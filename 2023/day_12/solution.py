@@ -5,7 +5,7 @@ from copy import deepcopy
 from math import gcd
 from collections import defaultdict, Counter, deque
 
-D = open('test.txt').read().strip()
+D = open('input.txt').read().strip()
 L = D.split('\n')
 G = [[c for c in row] for row in L]
 

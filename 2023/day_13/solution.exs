@@ -37,11 +37,7 @@ defmodule Day13 do
     do: do_check(tail1, tail2, fixed?)
 
   def do_check([h1 | tail1], [h2 | tail2], fixed?) do
-    if !fixed? && diff(h1, h2) do
-      do_check(tail1, tail2, true)
-    else
-      false
-    end
+    !fixed? && diff(h1, h2) && do_check(tail1, tail2, true)
   end
 
   def diff(str1, str2) do

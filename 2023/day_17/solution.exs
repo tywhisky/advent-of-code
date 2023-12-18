@@ -1,96 +1,167 @@
 defmodule Day17 do
-  def part_one() do
-    {target, map} = parse()
-
-    [{{0, 0}, :right, 0}, {{0, 0}, :down, 0}]
-    |> dfs(map, %{{0, 0} => 0})
-    |> Map.get(target)
+  def part1() do
+    {{_..max_row, _..max_col}, grid} = parse()
+    start = {0, 0}
+    target = {max_row, max_col}
+    loss = 0
+    dir = {-1, -1}
+    current = {loss, {start, 0, dir}}
+    seen = MapSet.new()
+    q = :gb_sets.singleton(current)
+    find_path_part1(q, grid, target, seen)
   end
 
-  def dfs([], _, record), do: record
+  defp find_path_part1(q, grid, target, seen) do
+    {smallest, q} = :gb_sets.take_smallest(q)
+    {loss, {pos, steps, dir}} = smallest
 
-  def dfs([{c, _, _} = curr | tail], map, record) do
-    nexts =
-      curr
-      |> nexts()
-      |> Enum.reject(fn {n, _, _} -> map[n] == nil end)
-      |> Enum.reject(fn {n, _, _} ->
-        record[n] < record[c] + map[n]
-      end)
+    if pos === target do
+      loss
+    else
+      ns =
+        directions()
+        |> Enum.flat_map(fn new_dir ->
+          new_pos = add(pos, new_dir)
 
-    new_record =
-      nexts
-      |> Enum.reduce(record, fn {next, _, _}, acc -> Map.put(acc, next, record[c] + map[next]) end)
+          cond do
+            not Map.has_key?(grid, new_pos) ->
+              []
 
-    dfs(nexts ++ tail, map, new_record)
+            dir === new_dir ->
+              steps = steps + 1
+
+              if steps === 4 do
+                []
+              else
+                [{add(pos, dir), steps, new_dir}]
+              end
+
+            rotate180(new_dir) === dir ->
+              []
+
+            true ->
+              [{new_pos, 1, new_dir}]
+          end
+          |> Enum.reject(fn key ->
+            MapSet.member?(seen, key)
+          end)
+        end)
+
+      seen =
+        Enum.reduce(ns, seen, fn key, seen ->
+          MapSet.put(seen, key)
+        end)
+
+      q =
+        Enum.reduce(ns, q, fn {new_pos, _, _} = key, q ->
+          loss = loss + Map.fetch!(grid, new_pos)
+          elem = {loss, key}
+          :gb_sets.add(elem, q)
+        end)
+
+      find_path_part1(q, grid, target, seen)
+    end
   end
 
-  def nexts({curr, dir, 3}) when dir in [:left, :right] do
-    [
-      {to_top(curr), :top, 1},
-      {to_down(curr), :down, 1}
-    ]
+  def part2() do
+    {{_..max_row, _..max_col}, grid} = parse()
+    start = {0, 0}
+    target = {max_row, max_col}
+    loss = 0
+    dir = {-1, -1}
+    current = {loss, {start, 0, dir}}
+    seen = MapSet.new()
+    q = :gb_sets.singleton(current)
+    find_path_part2(q, grid, target, seen)
   end
 
-  def nexts({curr, dir, 3}) when dir in [:top, :down] do
-    [
-      {to_right(curr), :right, 1},
-      {to_left(curr), :left, 1}
-    ]
+  defp find_path_part2(q, grid, target, seen) do
+    {smallest, q} = :gb_sets.take_smallest(q)
+    {loss, {pos, steps, dir}} = smallest
+
+    if steps >= 4 and pos === target do
+      loss
+    else
+      ns =
+        directions()
+        |> Enum.flat_map(fn new_dir ->
+          new_pos = add(pos, new_dir)
+
+          cond do
+            not Map.has_key?(grid, new_pos) ->
+              []
+
+            dir === new_dir ->
+              steps = steps + 1
+
+              if steps === 11 do
+                []
+              else
+                [{add(pos, dir), steps, new_dir}]
+              end
+
+            rotate180(new_dir) === dir ->
+              []
+
+            true ->
+              if steps === 0 or steps >= 4 do
+                [{new_pos, 1, new_dir}]
+              else
+                []
+              end
+          end
+          |> Enum.reject(fn key ->
+            MapSet.member?(seen, key)
+          end)
+        end)
+
+      seen =
+        Enum.reduce(ns, seen, fn key, seen ->
+          MapSet.put(seen, key)
+        end)
+
+      q =
+        Enum.reduce(ns, q, fn {new_pos, _steps, _dir} = key, q ->
+          loss = loss + Map.fetch!(grid, new_pos)
+          elem = {loss, key}
+          :gb_sets.add(elem, q)
+        end)
+
+      find_path_part2(q, grid, target, seen)
+    end
   end
 
-  def nexts({curr, :right, count}),
-    do: [
-      {to_right(curr), :right, count + 1},
-      {to_top(curr), :top, 1},
-      {to_down(curr), :down, 1}
-    ]
+  defp add({row0, col0}, {row1, col1}) do
+    {row0 + row1, col0 + col1}
+  end
 
-  def nexts({curr, :left, count}),
-    do: [
-      {to_left(curr), :left, count + 1},
-      {to_top(curr), :top, 1},
-      {to_down(curr), :down, 1}
-    ]
+  defp directions() do
+    [{-1, 0}, {0, -1}, {0, 1}, {1, 0}]
+  end
 
-  def nexts({curr, :top, count}),
-    do: [
-      {to_top(curr), :top, count + 1},
-      {to_left(curr), :left, 1},
-      {to_right(curr), :right, 1}
-    ]
+  defp rotate180({row, col}), do: {-row, -col}
 
-  def nexts({curr, :down, count}),
-    do: [
-      {to_down(curr), :down, count + 1},
-      {to_left(curr), :left, 1},
-      {to_right(curr), :right, 1}
-    ]
-
-  def to_right({col_idx, row_idx}), do: {col_idx, row_idx + 1}
-  def to_left({col_idx, row_idx}), do: {col_idx, row_idx - 1}
-  def to_top({col_idx, row_idx}), do: {col_idx - 1, row_idx}
-  def to_down({col_idx, row_idx}), do: {col_idx + 1, row_idx}
-
-  def parse() do
-    input =
-      ~c"input.txt"
-      |> File.read!()
-      |> String.split("\n", trim: true)
-
-    map =
-      input
+  defp parse() do
+    "input.txt"
+    |> File.read!()
+    |> String.split("\n", trim: true)
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {line, row} ->
+      String.to_charlist(line)
       |> Enum.with_index()
-      |> Enum.flat_map(fn {str, col_idx} ->
-        str
-        |> String.graphemes()
-        |> Enum.with_index()
-        |> Enum.map(fn {c, row_idx} -> {{col_idx, row_idx}, String.to_integer(c)} end)
+      |> Enum.map(fn {char, col} ->
+        position = {row, col}
+        {position, char - ?0}
       end)
-      |> Map.new()
-
-    {{length(input) - 1, String.length(List.first(input)) - 1}, map}
+    end)
+    |> Map.new()
+    |> then(fn map ->
+      {max_row, _} = Enum.max_by(Map.keys(map), &elem(&1, 0))
+      {_, max_col} = Enum.max_by(Map.keys(map), &elem(&1, 1))
+      {{0..max_row, 0..max_col}, map}
+    end)
   end
 end
 
-IO.inspect(Day17.part_one())
+IO.inspect(Day17.part1())
+IO.inspect(Day17.part2())

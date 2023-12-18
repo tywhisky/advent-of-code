@@ -1,7 +1,27 @@
 defmodule Day18 do
   def part_one() do
-    input = parse()
+    common(parse())
+  end
 
+  def part_two() do
+    parse()
+    |> Enum.map(fn {_dir, _len, color} ->
+      hex = String.slice(color, 1, String.length(color) - 2)
+
+      dir =
+        case String.last(color) do
+          "0" -> "R"
+          "1" -> "D"
+          "2" -> "L"
+          "3" -> "U"
+        end
+
+      {dir, String.to_integer(hex, 16), nil}
+    end)
+    |> common()
+  end
+
+  def common(input) do
     area =
       input
       |> draw({0, 0}, [{0, 0}])
@@ -42,3 +62,4 @@ defmodule Day18 do
 end
 
 IO.inspect(Day18.part_one())
+IO.inspect(Day18.part_two())

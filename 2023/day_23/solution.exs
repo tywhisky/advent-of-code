@@ -6,7 +6,7 @@ defmodule Day23 do
   def part_one() do
     {start, target, map} = parse()
 
-    g = build_graph(start, start, target, map, 0, %{}, Graph.new())
+    g = build_graph(start, start, target, map, 0, %{}, Graph.new(), &find_nexts_with_slopes/3)
 
     g
     |> Graph.get_paths(start, target)
@@ -21,13 +21,33 @@ defmodule Day23 do
     |> Enum.max()
   end
 
-  def build_graph(curr, prev, target, _map, weight, _record, g) when curr == target do
+  def build_graph(curr, prev, target, _map, weight, _record, g, _find_nexts)
+      when curr == target do
     Graph.add_edges(g, [{prev, curr, weight: weight}])
   end
 
-  def build_graph({row_idx, col_idx} = curr, prev, target, map, weight, record, g) do
+  def build_graph(curr, prev, target, map, weight, record, g, find_nexts) do
     record = Map.put(record, curr, true)
 
+    find_nexts.(curr, map, record)
+    |> case do
+      [] ->
+        g
+
+      [next] ->
+        build_graph(next, prev, target, map, weight + 1, record, g, find_nexts)
+
+      nexts ->
+        new_g = Graph.add_edges(g, [{prev, curr, weight: weight}])
+
+        nexts
+        |> Enum.reduce(new_g, fn next, acc ->
+          build_graph(next, curr, target, map, 1, record, acc, find_nexts)
+        end)
+    end
+  end
+
+  def find_nexts_with_slopes({row_idx, col_idx} = curr, map, record) do
     case map[curr] do
       "#" ->
         []
@@ -52,21 +72,6 @@ defmodule Day23 do
     |> Enum.reject(&is_nil(map[&1]))
     |> Enum.reject(&(map[&1] == "#"))
     |> Enum.reject(&record[&1])
-    |> case do
-      [] ->
-        g
-
-      [next] ->
-        build_graph(next, prev, target, map, weight + 1, record, g)
-
-      nexts ->
-        new_g = Graph.add_edges(g, [{prev, curr, weight: weight}])
-
-        nexts
-        |> Enum.reduce(new_g, fn next, acc ->
-          build_graph(next, curr, target, map, 1, record, acc)
-        end)
-    end
   end
 
   def parse() do

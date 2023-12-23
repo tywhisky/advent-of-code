@@ -1,8 +1,42 @@
 defmodule Day23 do
+  Mix.install([
+    {:libgraph, "~> 0.16.0"}
+  ])
+
   def part_one() do
     {start, target, map} = parse()
 
     dfs(start, target, map, 0, %{})
+  end
+
+  def part_two() do
+    {start, target, map} = parse()
+    g = Graph.new()
+
+    build_graph(Map.to_list(map), map, g)
+    |> Graph.get_paths(start, target)
+    |> Enum.map(&length/1)
+    |> Enum.max()
+    |> then(fn x -> x - 1 end)
+  end
+
+  def build_graph([], map, g), do: g
+
+  def build_graph([{{row_idx, col_idx} = curr, _} | tail], map, g) do
+    new_g =
+      [
+        {row_idx + 1, col_idx},
+        {row_idx - 1, col_idx},
+        {row_idx, col_idx + 1},
+        {row_idx, col_idx - 1}
+      ]
+      |> Enum.reject(&is_nil(map[&1]))
+      |> Enum.reject(&(map[&1] == "#"))
+      |> Enum.reduce(g, fn next, acc ->
+        Graph.add_edge(acc, curr, next, weight: 1)
+      end)
+
+    build_graph(tail, map, new_g)
   end
 
   def dfs(curr, target, _map, path, _record) when curr == target, do: path
@@ -62,4 +96,5 @@ defmodule Day23 do
   end
 end
 
-Day23.part_one() |> IO.inspect()
+# Day23.part_one() |> IO.inspect()
+Day23.part_two() |> IO.inspect()

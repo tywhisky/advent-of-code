@@ -6,8 +6,18 @@ defmodule Day23 do
   def part_one() do
     {start, target, map} = parse()
 
-    g = build_graph(start, start, target, map, 0, %{}, Graph.new(), &find_nexts_with_slopes/3)
+    build_graph(start, start, target, map, 0, %{}, Graph.new())
+    |> get_longest_path(start, target)
+  end
 
+  def part_two() do
+    {start, target, map} = parse()
+
+    build_graph(start, start, target, map, 0, %{}, Graph.new(), bidirectional: true)
+    |> get_longest_path(start, target)
+  end
+
+  def get_longest_path(g, start, target) do
     g
     |> Graph.get_paths(start, target)
     |> Enum.map(&Enum.chunk_every(&1, 2, 1, :discard))
@@ -21,28 +31,39 @@ defmodule Day23 do
     |> Enum.max()
   end
 
-  def build_graph(curr, prev, target, _map, weight, _record, g, _find_nexts)
+  def build_graph(curr, prev, target, map, weight, record, g, opts \\ [])
+
+  def build_graph(curr, prev, target, _map, weight, _record, g, opts)
       when curr == target do
-    Graph.add_edges(g, [{prev, curr, weight: weight}])
+    if Keyword.get(opts, :bidirectional) do
+      Graph.add_edges(g, [{prev, curr, weight: weight}, {curr, prev, weight: weight}])
+    else
+      Graph.add_edge(g, prev, curr, weight: weight)
+    end
   end
 
-  def build_graph(curr, prev, target, map, weight, record, g, find_nexts) do
+  def build_graph(curr, prev, target, map, weight, record, g, opts) do
     record = Map.put(record, curr, true)
 
-    find_nexts.(curr, map, record)
+    find_nexts_with_slopes(curr, map, record)
     |> case do
       [] ->
         g
 
       [next] ->
-        build_graph(next, prev, target, map, weight + 1, record, g, find_nexts)
+        build_graph(next, prev, target, map, weight + 1, record, g, opts)
 
       nexts ->
-        new_g = Graph.add_edges(g, [{prev, curr, weight: weight}])
+        new_g =
+          if Keyword.get(opts, :bidirectional) do
+            Graph.add_edges(g, [{prev, curr, weight: weight}, {curr, prev, weight: weight}])
+          else
+            Graph.add_edge(g, prev, curr, weight: weight)
+          end
 
         nexts
         |> Enum.reduce(new_g, fn next, acc ->
-          build_graph(next, curr, target, map, 1, record, acc, find_nexts)
+          build_graph(next, curr, target, map, 1, record, acc, opts)
         end)
     end
   end
@@ -98,4 +119,4 @@ defmodule Day23 do
 end
 
 Day23.part_one() |> IO.inspect()
-# Day23.part_two() |> IO.inspect()
+Day23.part_two() |> IO.inspect()

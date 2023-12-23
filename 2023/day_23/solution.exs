@@ -6,45 +6,32 @@ defmodule Day23 do
   def part_one() do
     {start, target, map} = parse()
 
-    dfs(start, target, map, 0, %{})
-  end
+    g = build_graph(start, start, target, map, 0, %{}, Graph.new())
 
-  def part_two() do
-    {start, target, map} = parse()
-    g = Graph.new()
-
-    build_graph(Map.to_list(map), map, g)
+    g
     |> Graph.get_paths(start, target)
-    |> Enum.map(&length/1)
-    |> Enum.max()
-    |> then(fn x -> x - 1 end)
-  end
+    |> Enum.map(&Enum.chunk_every(&1, 2, 1, :discard))
+    |> Enum.map(fn path ->
+      Enum.reduce(path, 0, fn [a, b], acc ->
+        %{weight: weight} = Graph.edge(g, a, b)
 
-  def build_graph([], map, g), do: g
-
-  def build_graph([{{row_idx, col_idx} = curr, _} | tail], map, g) do
-    new_g =
-      [
-        {row_idx + 1, col_idx},
-        {row_idx - 1, col_idx},
-        {row_idx, col_idx + 1},
-        {row_idx, col_idx - 1}
-      ]
-      |> Enum.reject(&is_nil(map[&1]))
-      |> Enum.reject(&(map[&1] == "#"))
-      |> Enum.reduce(g, fn next, acc ->
-        Graph.add_edge(acc, curr, next, weight: 1)
+        weight + acc
       end)
-
-    build_graph(tail, map, new_g)
+    end)
+    |> Enum.max()
   end
 
-  def dfs(curr, target, _map, path, _record) when curr == target, do: path
+  def build_graph(curr, prev, target, _map, weight, _record, g) when curr == target do
+    Graph.add_edges(g, [{prev, curr, weight: weight}])
+  end
 
-  def dfs({row_idx, col_idx} = curr, target, map, path, record) do
+  def build_graph({row_idx, col_idx} = curr, prev, target, map, weight, record, g) do
     record = Map.put(record, curr, true)
 
     case map[curr] do
+      "#" ->
+        []
+
       ">" ->
         [{row_idx, col_idx + 1}]
 
@@ -54,10 +41,7 @@ defmodule Day23 do
       "v" ->
         [{row_idx + 1, col_idx}]
 
-      "#" ->
-        []
-
-      "." ->
+      _ ->
         [
           {row_idx, col_idx + 1},
           {row_idx, col_idx - 1},
@@ -66,11 +50,23 @@ defmodule Day23 do
         ]
     end
     |> Enum.reject(&is_nil(map[&1]))
+    |> Enum.reject(&(map[&1] == "#"))
     |> Enum.reject(&record[&1])
-    |> Enum.reduce(path, fn next, acc_result ->
-      dfs(next, target, map, path + 1, record)
-      |> max(acc_result)
-    end)
+    |> case do
+      [] ->
+        g
+
+      [next] ->
+        build_graph(next, prev, target, map, weight + 1, record, g)
+
+      nexts ->
+        new_g = Graph.add_edges(g, [{prev, curr, weight: weight}])
+
+        nexts
+        |> Enum.reduce(new_g, fn next, acc ->
+          build_graph(next, curr, target, map, 1, record, acc)
+        end)
+    end
   end
 
   def parse() do
@@ -96,5 +92,5 @@ defmodule Day23 do
   end
 end
 
-# Day23.part_one() |> IO.inspect()
-Day23.part_two() |> IO.inspect()
+Day23.part_one() |> IO.inspect()
+# Day23.part_two() |> IO.inspect()

@@ -118,5 +118,10 @@ defmodule Day23 do
   end
 end
 
-Day23.part_one() |> IO.inspect()
-Day23.part_two() |> IO.inspect()
+{execution_time_1, result_1} = :timer.tc(&Day23.part_one/0)
+IO.puts("Part 1 execution time: #{execution_time_1} microseconds")
+IO.puts("Function result: #{result_1}")
+
+{execution_time_2, result_2} = :timer.tc(&Day23.part_two/0)
+IO.puts("Part 2 execution time: #{execution_time_2} microseconds")
+IO.puts("Function result: #{result_2}")

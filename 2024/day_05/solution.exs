@@ -41,17 +41,19 @@ defmodule Solution do
       Enum.reduce(list, [], fn {k, v}, acc -> [k | v] ++ acc end)
       |> Enum.uniq()
 
-    order =
-      list
-      |> Enum.flat_map(fn {k, v} -> Enum.map(v, &{k, &1}) end)
-      |> case do
-        edges ->
-          Graph.new() |> Graph.add_vertices(all) |> Graph.add_edges(edges)
-      end
-      |> Graph.topsort()
-
     Enum.reject(rows, &check(&1, [], map))
     |> Enum.map(fn row ->
+      order =
+        map
+        |> Map.to_list()
+        |> Enum.filter(fn {k, v} -> k in row end)
+        |> Enum.flat_map(fn {k, v} -> Enum.map(v, &{k, &1}) end)
+        |> case do
+          edges ->
+            Graph.new() |> Graph.add_vertices(all) |> Graph.add_edges(edges)
+        end
+        |> Graph.topsort()
+
       sort_by_order(row, order)
     end)
     |> Enum.map(&Enum.at(&1, div(length(&1), 2)))

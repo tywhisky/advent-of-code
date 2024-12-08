@@ -19,6 +19,54 @@ defmodule Solution do
     move(start, map, %{})
   end
 
+  def part_two(path) do
+    list = parse(path)
+    start = Enum.find(list, fn {_, c} -> c == "^" end)
+    map = Map.new(list)
+    loop_move(start, map, 0)
+  end
+
+  def loop_move({key, _face} = point, map, result) do
+    case map[key] do
+      nil ->
+        result
+
+      "#" ->
+        next = find_change_next(point)
+        loop_move(next, map, result)
+
+      _ ->
+        new_result =
+          if is_loop?(find_change_next(point), map, point) do
+            result + 1
+          else
+            result
+          end
+
+        next = find_direct_next(point)
+        loop_move(next, map, new_result)
+    end
+  end
+
+  def is_loop?({key, _face} = point, map, origin) do
+    case map[key] do
+      nil ->
+        false
+
+      "#" ->
+        case find_change_next(point) do
+          next when next == origin -> true
+          next -> is_loop?(next, map, origin)
+        end
+
+      _ ->
+        case find_direct_next(point) do
+          next when next == origin -> true
+          next -> is_loop?(next, map, origin)
+        end
+    end
+  end
+
   def move({key, _face} = point, map, result) do
     case map[key] do
       nil ->
@@ -70,5 +118,5 @@ end
 Solution.part_one("test.txt") |> IO.inspect(label: "Part One with test.txt")
 Solution.part_one("input.txt") |> IO.inspect(label: "Part One with input.txt")
 
-# # Solution.part_two("test.txt") |> IO.inspect(label: "Part Two with test.txt")
-# # Solution.part_two("input.txt") |> IO.inspect(label: "Part Two with input.txt")
+Solution.part_two("test.txt") |> IO.inspect(label: "Part Two with test.txt")
+# Solution.part_two("input.txt") |> IO.inspect(label: "Part Two with input.txt")

@@ -37,7 +37,7 @@ defmodule Solution do
 
       _ ->
         new_result =
-          if is_loop?(find_change_next(point), map, Map.new([{point, true}])) do
+          if is_loop?(find_change_next(point), map, Map.new([{point, :o}])) do
             result + 1
           else
             result
@@ -56,19 +56,24 @@ defmodule Solution do
       "#" ->
         next = find_change_next(point)
 
-        if origin[next] == true do
-          true
-        else
-          is_loop?(next, map, Map.put(origin, point, true))
+        case origin[next] do
+          :o ->
+            true
+
+          :p ->
+            false
+
+          _ ->
+            is_loop?(next, map, Map.put(origin, point, :p))
         end
 
       _ ->
         next = find_direct_next(point)
 
-        if origin[next] == true do
-          true
-        else
-          is_loop?(next, map, Map.put(origin, point, true))
+        case origin[next] do
+          :o -> true
+          :p -> false
+          _ -> is_loop?(next, map, Map.put(origin, point, :p))
         end
     end
   end

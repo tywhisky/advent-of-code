@@ -37,7 +37,7 @@ defmodule Solution do
 
       _ ->
         new_result =
-          if is_loop?(find_change_next(point), map, point) do
+          if is_loop?(find_change_next(point), map, Map.new([{point, true}])) do
             result + 1
           else
             result
@@ -54,15 +54,21 @@ defmodule Solution do
         false
 
       "#" ->
-        case find_change_next(point) do
-          next when next == origin -> true
-          next -> is_loop?(next, map, origin)
+        next = find_change_next(point)
+
+        if origin[next] == true do
+          true
+        else
+          is_loop?(next, map, Map.put(origin, point, true))
         end
 
       _ ->
-        case find_direct_next(point) do
-          next when next == origin -> true
-          next -> is_loop?(next, map, origin)
+        next = find_direct_next(point)
+
+        if origin[next] == true do
+          true
+        else
+          is_loop?(next, map, Map.put(origin, point, true))
         end
     end
   end
@@ -119,4 +125,4 @@ Solution.part_one("test.txt") |> IO.inspect(label: "Part One with test.txt")
 Solution.part_one("input.txt") |> IO.inspect(label: "Part One with input.txt")
 
 Solution.part_two("test.txt") |> IO.inspect(label: "Part Two with test.txt")
-# Solution.part_two("input.txt") |> IO.inspect(label: "Part Two with input.txt")
+Solution.part_two("input.txt") |> IO.inspect(label: "Part Two with input.txt")

@@ -38,11 +38,20 @@ defmodule Solution do
     i = {a - x + a, b - y + b}
     j = {x - a + x, y - b + y}
 
-    case {map[i], map[j]} do
-      {nil, "."} -> 1
-      {".", nil} -> 1
-      {".", "."} -> 2
-      _ -> 0
+    do_check({x, y}, a - x, b - y, map, 0) +
+      do_check({a, b}, x - a, y - b, map, 0)
+  end
+
+  def do_check({a, b}, x, y, map, result) do
+    case map[{a + x, b + y}] do
+      nil ->
+        result
+
+      "." ->
+        do_check({a + x, b + y}, x, y, map, result + 1)
+
+      _ ->
+        do_check({a + x, b + y}, x, y, map, result)
     end
   end
 

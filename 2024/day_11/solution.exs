@@ -7,49 +7,44 @@ defmodule Solution do
   end
 
   def part_one(path) do
-    origin = parse(path)
-    origin_map = Map.new(origin, fn x -> {x, 1} end)
-    |> IO.inspect()
+    origin = parse(path) |> Enum.frequencies()
 
-    Enum.reduce(1..25, origin_map, fn _, acc ->
-      origin = Map.to_list(acc)
-      round(origin, acc)
-    end)
+    Stream.iterate(origin, &do_round(&1))
+    |> Enum.at(75)
     |> Map.values()
-    |> Enum.max()
+    |> Enum.sum()
   end
-  
-  def round([], result), do: result
 
-  def round([_ | tail], result) do
-    new_result =
-      result
-      |> Map.to_list()
-      |> Enum.reduce(result, fn
-        {"0", k}, acc ->
-          Map.update(acc, "0", 0, &(&1 + 1))
+  def do_round(map) do
+    map
+    |> Map.to_list()
+    |> Enum.reduce(%{}, fn a, acc ->
+      change(a, acc)
+    end)
+  end
 
-        {v, k}, acc ->
-          len = String.length(v)
-          mid = div(len, 2)
+  def change({"0", count}, map) do
+    Map.update(map, "1", count, & &1 + count)
+  end
 
-          if rem(len, 2) == 0 do
-            left = String.slice(v, 0..(mid - 1)//1) |> remove_zero()
-            right = String.slice(v, mid..-1//1) |> remove_zero()
+  def change({string, count}, map) do
+    len = String.length(string)
+    mid = div(len, 2)
 
-            acc
-            |> Map.update(left, 0, &(&1 + 1))
-            |> Map.update(right, 0, &(&1 + 1))
-          else
-            a =
-              (String.to_integer(v) * 2024)
-              |> Integer.to_string()
+    if rem(len, 2) == 0 do
+      left = String.slice(string, 0..(mid - 1)//1) |> remove_zero()
+      right = String.slice(string, mid..-1//1) |> remove_zero()
+      [{left, count}, {right, count}]
+      
+      map
+      |> Map.update(left, count, & &1 + count)
+      |> Map.update(right, count, & &1 + count)
+    else
+      new_num = (String.to_integer(string) * 2024) |> Integer.to_string()
 
-            Map.update(acc, a, 0, &(&1 + 1))
-          end
-      end)
-
-    round(tail, new_result)
+      map
+      |> Map.update(new_num, count, & &1 + count)
+    end
   end
 
   defp remove_zero(string) do
@@ -60,7 +55,7 @@ defmodule Solution do
   end
 end
 
- Solution.part_one("test.txt") |> IO.inspect(label: "Part One with test.txt")
-# Solution.part_one("input.txt") |> IO.inspect(label: "Part One with input.txt")
+# Solution.part_one("test.txt") |> IO.inspect(label: "Part One with test.txt")
+Solution.part_one("input.txt") |> IO.inspect(label: "Part One with input.txt")
 # Solution.part_two("test.txt") |> IO.inspect(label: "Part Two with test.txt")
 # Solution.part_two("input.txt") |> IO.inspect(label: "Part Two with inpt.txt")

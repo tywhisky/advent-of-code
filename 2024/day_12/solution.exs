@@ -1,3 +1,5 @@
+Mix.install([{:libgraph, "~> 0.16.0"}])
+
 defmodule Solution do
   def parse(path) do
     path
@@ -19,44 +21,30 @@ defmodule Solution do
     map = Map.new(list)
     map_with_perimeter = build_map_with_perimeter(list, map, %{})
 
-    grouped =
-      list
-      |> Enum.reduce({[], %{}}, fn k, {rs, re} ->
-        if re[k] do
-          {rs, re}
-        else
-          new_result = group(k, map, %{})
-          new_record = Map.new(new_result, fn k -> {k, true} end) |> Map.merge(re)
-          {[new_result | rs], new_record}
-        end
-      end)
-      |> elem(0)
-      |> Enum.map(&Enum.sort/1)
-      |> Enum.uniq()
-      |> Enum.map(fn row ->
-        {length(row), Enum.map(row, &map_with_perimeter[&1]) |> Enum.sum()}
-      end)
-      |> Enum.map(fn {a, b} -> a * b end)
-      |> Enum.sum()
-  end
+    list
+    |> Enum.reduce(Graph.new(), fn {{x, y}, type}, g ->
+      vertices =
+        [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+        |> Enum.filter(&(map[&1] == type))
 
-  defp group({{x, y}, type}, map, record) do
-    record = Map.put(record, {x, y}, true)
+      edges =
+        vertices
+        |> Enum.map(fn to -> {{x, y}, to} end)
 
-    [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
-    |> Enum.filter(&(map[&1] == type && record[&1] == nil))
-    |> case do
-      [] ->
-        [{x, y}]
+      g
+      |> Graph.add_vertices([{x, y} | vertices])
+      |> Graph.add_edges(edges)
+    end)
+    |> Graph.components()
+    |> Enum.map(fn group ->
+      perimeter =
+        group
+        |> Enum.map(&map_with_perimeter[&1])
+        |> Enum.sum()
 
-      nexts ->
-        result =
-          nexts
-          |> Enum.map(fn x -> {x, type} end)
-          |> Enum.flat_map(&group(&1, map, record))
-
-        [{x, y} | result] |> Enum.uniq()
-    end
+      length(group) * perimeter
+    end)
+    |> Enum.sum()
   end
 
   defp build_map_with_perimeter([], _map, result), do: result

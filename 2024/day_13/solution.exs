@@ -21,8 +21,7 @@ defmodule Solution do
     parse(path)
     |> Enum.map(&find_fewest_tokens/1)
     |> Enum.reject(&Enum.empty?/1)
-    |> Enum.map(&Enum.min_by(&1, fn {a, b, c} -> {c, b, a} end))
-    |> Enum.map(&elem(&1, 0))
+    |> Enum.map(&Enum.min/1)
     |> Enum.sum()
   end
 
@@ -32,10 +31,10 @@ defmodule Solution do
       sum_b = a * ay + b * by
       {a, b, sum_a, sum_b}
     end
-    |> Enum.filter(fn {a, b, xx, yy} ->
+    |> Enum.filter(fn {_a, _b, xx, yy} ->
       xx == tx and yy == ty
     end)
-    |> Enum.map(fn {a, b, xx, yy} -> {a * 3 + b * 1, xx, yy} end)
+    |> Enum.map(fn {a, b, _xx, _yy} -> a * 3 + b * 1 end)
   end
 end
 

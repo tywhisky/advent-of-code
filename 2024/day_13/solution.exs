@@ -25,6 +25,26 @@ defmodule Solution do
     |> Enum.sum()
   end
 
+  def part_two(path) do
+    parse(path)
+    |> Enum.map(fn [a, b, c] -> [a, b, Enum.map(c, fn x -> x + 10_000_000_000_000 end)] end)
+    |> Enum.map(&solve/1)
+    |> Enum.flat_map(fn
+      [a, b] -> [3 * a + b]
+      _ -> []
+    end)
+    |> Enum.sum()
+  end
+
+  def solve([[a, c], [b, d], [e, f]]) do
+    x = (d * e - b * f) / (a * d - b * c)
+    y = (a * f - c * e) / (a * d - b * c)
+
+    if floor(x) == x and floor(y) == y do
+      [trunc(x), trunc(y)]
+    end
+  end
+
   defp find_fewest_tokens([[ax, ay], [bx, by], [tx, ty]]) do
     for a <- Enum.to_list(1..99), b <- Enum.to_list(1..99) do
       sum_a = a * ax + b * bx
@@ -40,5 +60,5 @@ end
 
 Solution.part_one("test.txt") |> IO.inspect(label: "Part One with test.txt")
 Solution.part_one("input.txt") |> IO.inspect(label: "Part One with input.txt")
-# Solution.part_two("test.txt") |> IO.inspect(label: "Part Two with test.txt")
-# Solution.part_two("input.txt") |> IO.inspect(label: "Part Two with inpt.txt")
+Solution.part_two("test.txt") |> IO.inspect(label: "Part Two with test.txt")
+Solution.part_two("input.txt") |> IO.inspect(label: "Part Two with inpt.txt")

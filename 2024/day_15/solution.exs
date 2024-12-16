@@ -32,10 +32,8 @@ defmodule Solution do
     {start, map, actions} = parse(path)
 
     move(actions, start, map)
-    |> Enum.find(fn {a, _} -> a == {3, 2} end)
-    |> IO.inspect()
     |> Map.to_list()
-    # |> debug()
+    #    |> debug()
     |> Enum.filter(&(elem(&1, 1) == "O"))
     |> Enum.map(fn {{a, b}, _} ->
       100 * a + b
@@ -47,108 +45,143 @@ defmodule Solution do
     list
     |> Enum.group_by(fn {{x, y}, c} -> x end)
     |> Enum.to_list()
-    |> Enum.find(fn {a, _} -> a == {3, 2} end)
     |> Enum.sort_by(&elem(&1, 0))
     |> Enum.map(&elem(&1, 1))
     |> Enum.map(&Enum.sort_by(&1, fn {{a, b}, _} -> b end))
     |> Enum.map(&Enum.map(&1, fn x -> elem(x, 1) end))
     |> Enum.map(&Enum.join(&1, ""))
+    |> Enum.map(&IO.inspect/1)
   end
 
   def move([], _, map), do: map
 
   def move(["<" | tail], {x, y}, map) do
-    (y - 1)..0
-    |> Enum.to_list()
-    |> Enum.map(fn a -> {x, a} end)
+    directions =
+      (y - 1)..0
+      |> Enum.to_list()
+      |> Enum.map(fn a -> {x, a} end)
+
+    {wx, wy} = Enum.find(directions, &(map[&1] == "#"))
+
+    directions
     |> Enum.find(&(map[&1] == "."))
     |> case do
       nil ->
         move(tail, {x, y}, map)
 
       {tx, ty} ->
-        others =
-          (y - 1)..ty
-          |> Enum.to_list()
-          |> Map.new(fn ny -> {{x, ny}, "O"} end)
+        if wy > ty do
+          move(tail, {x, y}, map)
+        else
+          others =
+            (y - 1)..ty
+            |> Enum.to_list()
+            |> Map.new(fn ny -> {{x, ny}, "O"} end)
 
-        robot = Map.new([{{x, y - 1}, "@"}, {{x, y}, "."}])
+          robot = Map.new([{{x, y - 1}, "@"}, {{x, y}, "."}])
 
-        new_map = Map.merge(map, Map.merge(others, robot))
-        move(tail, {x, y - 1}, new_map)
+          new_map = Map.merge(map, Map.merge(others, robot))
+          move(tail, {x, y - 1}, new_map)
+        end
     end
   end
 
   def move(["^" | tail], {x, y}, map) do
-    (x - 1)..0
-    |> Enum.to_list()
-    |> Enum.map(fn a -> {a, y} end)
+    directions =
+      (x - 1)..0
+      |> Enum.to_list()
+      |> Enum.map(fn a -> {a, y} end)
+
+    {wx, wy} = Enum.find(directions, &(map[&1] == "#"))
+
+    directions
     |> Enum.find(&(map[&1] == "."))
     |> case do
       nil ->
         move(tail, {x, y}, map)
 
       {tx, ty} ->
-        others =
-          (x - 1)..tx
-          |> Enum.to_list()
-          |> Map.new(fn nx -> {{nx, y}, "O"} end)
+        if wx > tx do
+          move(tail, {x - 1, y}, map)
+        else
+          others =
+            (x - 1)..tx
+            |> Enum.to_list()
+            |> Map.new(fn nx -> {{nx, y}, "O"} end)
 
-        robot = Map.new([{{x - 1, y}, "@"}, {{x, y}, "."}])
+          robot = Map.new([{{x - 1, y}, "@"}, {{x, y}, "."}])
 
-        new_map = Map.merge(map, Map.merge(others, robot))
-        move(tail, {x - 1, y}, new_map)
+          new_map = Map.merge(map, Map.merge(others, robot))
+          move(tail, {x - 1, y}, new_map)
+        end
     end
-    |> dbg()
   end
 
   def move(["v" | tail], {x, y}, map) do
-    (x + 1)..50
-    |> Enum.to_list()
-    |> Enum.map(fn a -> {a, y} end)
+    directions =
+      (x + 1)..50
+      |> Enum.to_list()
+      |> Enum.map(fn a -> {a, y} end)
+
+    {wx, wy} = Enum.find(directions, &(map[&1] == "#"))
+
+    directions
     |> Enum.find(&(map[&1] == "."))
     |> case do
       nil ->
         move(tail, {x, y}, map)
 
       {tx, ty} ->
-        others =
-          (x + 1)..tx
-          |> Enum.to_list()
-          |> Map.new(fn nx -> {{nx, y}, "O"} end)
+        if wx < tx do
+          move(tail, {x, y}, map)
+        else
+          others =
+            (x + 1)..tx
+            |> Enum.to_list()
+            |> Map.new(fn nx -> {{nx, y}, "O"} end)
 
-        robot = Map.new([{{x + 1, y}, "@"}, {{x, y}, "."}])
+          robot = Map.new([{{x + 1, y}, "@"}, {{x, y}, "."}])
 
-        new_map = Map.merge(map, Map.merge(others, robot))
-        move(tail, {x + 1, y}, new_map)
+          new_map = Map.merge(map, Map.merge(others, robot))
+          move(tail, {x + 1, y}, new_map)
+        end
     end
   end
 
   def move([">" | tail], {x, y}, map) do
-    (y + 1)..50
-    |> Enum.to_list()
-    |> Enum.map(fn a -> {x, a} end)
+    directions =
+      (y + 1)..50
+      |> Enum.to_list()
+      |> Enum.map(fn a -> {x, a} end)
+
+    {wx, wy} = Enum.find(directions, &(map[&1] == "#"))
+
+    directions
     |> Enum.find(&(map[&1] == "."))
     |> case do
       nil ->
         move(tail, {x, y}, map)
 
       {tx, ty} ->
-        others =
-          (y + 1)..ty
-          |> Enum.to_list()
-          |> Map.new(fn ny -> {{x, ny}, "O"} end)
+        if wy < ty do
+          move(tail, {x, y}, map)
+        else
+          others =
+            (y + 1)..ty
+            |> Enum.to_list()
+            |> Map.new(fn ny -> {{x, ny}, "O"} end)
 
-        robot = Map.new([{{x, y + 1}, "@"}, {{x, y}, "."}])
+          robot = Map.new([{{x, y + 1}, "@"}, {{x, y}, "."}])
 
-        new_map = Map.merge(map, Map.merge(others, robot))
-        move(tail, {x, y + 1}, new_map)
+          new_map = Map.merge(map, Map.merge(others, robot))
+          move(tail, {x, y + 1}, new_map)
+        end
     end
   end
 end
 
 Solution.part_one("test.txt") |> IO.inspect(label: "Part One with test.txt")
-# Solution.part_one("input.txt") |> IO.inspect(label: "Part One with input.txt")
+Solution.part_one("input.txt") |> IO.inspect(label: "Part One with input.txt")
 
 # Solution.part_two("test.txt") |> IO.inspect(label: "Part Two with test.txt")
 # Solution.part_two("input.txt") |> IO.inspect(label: "Part Two with inpt.txt")

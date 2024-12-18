@@ -21,12 +21,20 @@ defmodule Solution do
       |> Enum.map(fn [r, n] ->
         [String.last(r), String.replace(n, " ", "") |> String.to_integer()]
       end)
+      |> Enum.reverse()
 
     {programs, registers}
   end
 
   def part_one(path) do
     {programs, registers} = parse(path)
+
+    initial = Map.new(registers, fn [a, b] -> {a, b} end)
+
+    registers
+    |> Enum.reduce(initial, fn [curr, _], acc ->
+      nil
+    end)
   end
 end
 

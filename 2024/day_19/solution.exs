@@ -8,6 +8,7 @@ defmodule Solution do
     towels =
       towels
       |> String.split(", ", trim: true)
+      |> Enum.map(&String.trim/1)
       |> Map.new(&{&1, true})
 
     list =
@@ -27,7 +28,13 @@ defmodule Solution do
   end
 
   def dfs([], _map, ""), do: true
-  def dfs([], map, path), do: map[path]
+
+  def dfs([], map, path) do
+    case map[path] do
+      true -> true
+      _ -> false
+    end
+  end
 
   def dfs([h | tail], map, path) do
     case map[path] do

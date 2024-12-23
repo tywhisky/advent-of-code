@@ -38,12 +38,11 @@ defmodule Solution do
 
     lens =
       list
-      |> Enum.map(&build_actions(&1, {0, 0}, @numeric_map, []))
-      |> Enum.map(&build_actions(&1, {0, 0}, @directional_map, []))
-      |> Enum.map(&build_actions(&1, {0, 0}, @directional_map, []))
-      |> Enum.map(&Enum.join(&1, ""))
-
-    #   |> Enum.map(&length/1)
+      |> Enum.map(&build_actions(&1, {{0, 0}, "A"}, @numeric_map, []))
+      |> Enum.map(&build_actions(&1, {{0, 0}, "A"}, @directional_map, []))
+      |> Enum.map(&build_actions(&1, {{0, 0}, "A"}, @directional_map, []))
+      |> Enum.map(&length/1)
+      |> IO.inspect(charlists: :as_list)
 
     # [nums, lens]
     # |> Enum.zip()
@@ -61,13 +60,22 @@ defmodule Solution do
   def build_actions([], curr, map, result), do: result
 
   def build_actions([to | tail], curr, map, result) do
-    actions = do_actions(curr, map[to])
+    actions = do_actions(curr, {map[to], to})
 
     new_result = result ++ actions
-    build_actions(tail, map[to], map, new_result)
+    build_actions(tail, {map[to], to}, map, new_result)
   end
 
-  def do_actions({x1, y1}, {x2, y2}) do
+  #   from '>' to '^'  :  only possible way is <^A
+  # from '^' to '>'  :  only possible way is v>A
+  # from 'A' to 'v'  :  only possible way is <vA
+  # from 'v' to 'A'  :  only possible way is ^>A
+  def do_actions({_, ">"}, {_, "^"}), do: ["<", "^", "A"]
+  def do_actions({_, "^"}, {_, ">"}), do: ["v", ">", "A"]
+  def do_actions({_, "A"}, {_, "v"}), do: ["<", "v", "A"]
+  def do_actions({_, "v"}, {_, "A"}), do: ["^", ">", "A"]
+
+  def do_actions({{x1, y1}, _}, {{x2, y2}, _}) do
     up_or_down = x2 - x1
     left_or_right = y2 - y1
 

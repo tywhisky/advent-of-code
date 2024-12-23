@@ -17,6 +17,33 @@ defmodule Solution do
     |> Enum.sum()
   end
 
+  def part_two(path) do
+    parse(path)
+    |> Enum.map(fn x -> [x] end)
+    |> Stream.iterate(fn secrets ->
+      Enum.map(secrets, fn [h | _] = acc ->
+        [do_round(h) | acc]
+      end)
+    end)
+    |> Enum.at(2000 - 1)
+    |> Enum.map(&Enum.map(&1, fn x -> rem(x, 10) end))
+    |> Enum.flat_map(fn list ->
+      diffs =
+        list
+        |> Enum.chunk_every(2, 1, :discard)
+        |> Enum.map(fn [a, b] -> a - b end)
+        |> Enum.chunk_every(4, 1, :discard)
+
+      Enum.zip(diffs, list)
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+      |> Enum.map(fn {a, b} -> {a, Enum.max(b)} end)
+    end)
+    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+    |> Enum.max_by(fn {a, b} -> Enum.sum(b) end)
+    |> elem(1)
+    |> Enum.sum()
+  end
+
   def do_round(secret) do
     secret =
       (secret * 64)
@@ -43,5 +70,7 @@ defmodule Solution do
   end
 end
 
-Solution.part_one("test.txt") |> IO.inspect()
-Solution.part_one("input.txt") |> IO.inspect()
+# Solution.part_one("test.txt") |> IO.inspect()
+# Solution.part_one("input.txt") |> IO.inspect()
+Solution.part_two("test.txt") |> IO.inspect()
+Solution.part_two("input.txt") |> IO.inspect()

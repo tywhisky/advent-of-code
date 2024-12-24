@@ -49,7 +49,7 @@ defmodule Solution do
 
       {ws, new_map}
     end)
-    |> Enum.at(100)
+    |> Enum.at(46)
     |> elem(1)
     |> Map.to_list()
     |> Enum.filter(&String.starts_with?(elem(&1, 0), "z"))

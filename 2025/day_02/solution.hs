@@ -28,8 +28,35 @@ main = do
   print partOneResult
 
   putStrLn "\n=== Part Two ==="
-  -- let (_, result2) = partTwo lines [(50, 0)]
-  -- print result2
+  let result2 = partTwo lines 0
+  print result2
+
+properDivisors :: Int -> [Int]
+properDivisors l = [d | d <- [1 .. l-1], l `mod` d == 0]
+
+partTwo :: [String] -> Integer -> Integer
+partTwo [] acc = acc
+partTwo (rangeStr:rest) acc =
+  let
+    [startS, endS] = splitOn "-" rangeStr
+    startN = read startS :: Integer
+    endN   = read endS   :: Integer
+
+    invalidIDs =
+      [ n
+      | n <- [startN .. endN]
+      , let s = show n
+            l = length s
+      , let ks = properDivisors l
+      , not (null ks)
+      , any (\k -> let t = take k s
+                       repeated = take l (cycle t)
+                   in repeated == s) ks
+      ]
+
+    rangeSum = sum invalidIDs
+  in
+    partTwo rest (acc + rangeSum)
 
 partOne :: [String] -> Int -> IO Int
 partOne [] result = return result
@@ -42,10 +69,10 @@ partOne (range:rest) result = do
     acc =
       sum
       [ read (a <> b) :: Int
-      | x <- [start .. end]
-      , let s = show x
-      , let (a, b) = splitAt (length s `div` 2) s
-      , a == b
+        | x <- [start .. end]
+        , let s = show x
+        , let (a, b) = splitAt (length s `div` 2) s
+        , a == b
       ]
 
   partOne rest (result + acc)

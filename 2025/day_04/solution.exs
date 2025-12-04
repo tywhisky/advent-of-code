@@ -10,7 +10,6 @@ defmodule Solution do
     {1, 1}
   ]
 
-  # 解析输入为 map：{row, col} => "@"/"."
   def parse(input) do
     input
     |> File.read!()
@@ -26,9 +25,7 @@ defmodule Solution do
   end
 
   def accessible?(map, {r, c}) do
-    adj_count =
-      @dirs
-      |> Enum.count(fn {dr, dc} -> map[{r + dr, c + dc}] == "@" end)
+    adj_count = Enum.count(@dirs, fn {dr, dc} -> map[{r + dr, c + dc}] == "@" end)
     adj_count < 4
   end
 
@@ -40,7 +37,25 @@ defmodule Solution do
     |> Enum.count(fn {pos, _} -> accessible?(map, pos) end)
     |> IO.inspect(label: "Part One Result")
   end
+  
+  def part_two(file) do
+    original = parse(file)
+    new = recursive(original) |> dbg()
 
+    (original |> Map.to_list() |> Enum.filter(fn {_pos, val} -> val == "@" end) |> length())-
+      (new |> Map.to_list() |> length())
+    |> dbg()
+  end
+
+  def recursive(map) do
+    new = 
+    map
+    |> Enum.filter(fn {_pos, val} -> val == "@" end)
+    |> Enum.reject(fn {pos, _} -> accessible?(map, pos) end)
+    |> Map.new()
+
+    if new == map, do: new, else: recursive(new)
+  end
 end
 
 file_path =
@@ -49,5 +64,5 @@ file_path =
     _ -> "input.txt"
   end
 
-Solution.part_one(file_path)
-# Solution.part_two(file_path)
+# Solution.part_one(file_path)
+Solution.part_two(file_path)
